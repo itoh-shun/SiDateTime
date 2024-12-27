@@ -77,7 +77,7 @@ class SiDateTime extends DateTime
 
     public function isLeapYear()
     {
-        return $this->format('L') === 1;
+        return $this->format('L') === '1';
     }
 
     public function isSameDay(SiDateTime $datetime)
@@ -125,6 +125,7 @@ class SiDateTime extends DateTime
         return $this->format('m-d') === $birthday->format('m-d');
     }
 
+    // 既存の比較メソッド
     public function eq(SiDateTime $latest)
     {
         return $this->getTimestamp() === $latest->getTimestamp();
@@ -159,6 +160,38 @@ class SiDateTime extends DateTime
     {
         return $old->getTimestamp() <= $this->getTimestamp() &&
             $this->getTimestamp() <= $latest->getTimestamp();
+    }
+
+    // 新しく追加する比較メソッド
+    public function isAfter(SiDateTime $other): bool
+    {
+        return $this->getTimestamp() > $other->getTimestamp();
+    }
+
+    public function isSameOrAfter(SiDateTime $other): bool
+    {
+        return $this->getTimestamp() >= $other->getTimestamp();
+    }
+
+    public function isBefore(SiDateTime $other): bool
+    {
+        return $this->getTimestamp() < $other->getTimestamp();
+    }
+
+    public function isSameOrBefore(SiDateTime $other): bool
+    {
+        return $this->getTimestamp() <= $other->getTimestamp();
+    }
+
+    public function isBetween(SiDateTime $start, SiDateTime $end, bool $inclusive = true): bool
+    {
+        if ($inclusive) {
+            return $this->getTimestamp() >= $start->getTimestamp() &&
+                $this->getTimestamp() <= $end->getTimestamp();
+        } else {
+            return $this->getTimestamp() > $start->getTimestamp() &&
+                $this->getTimestamp() < $end->getTimestamp();
+        }
     }
 
     public function copy()
@@ -457,7 +490,6 @@ class SiDateTime extends DateTime
         //return $diff;
         return (int) ($this->diffInDays($date) / 7);
     }
-
     public function __toString()
     {
         return $this->toDateTimeString();
@@ -467,17 +499,17 @@ class SiDateTime extends DateTime
     {
         switch ($name) {
             case 'year':
-                $this->setDate($value, $this->month, $this->day);
+                $this->setDate((int)$value, $this->month, $this->day);
                 break;
             case 'month':
-                $this->setDate($this->year, $value, $this->day);
+                $this->setDate($this->year, (int)$value, $this->day);
                 break;
             case 'day':
-                $this->setDate($this->year, $this->month, $value);
+                $this->setDate($this->year, $this->month, (int)$value);
                 break;
             case 'hour':
                 $this->setTime(
-                    $value,
+                    (int)$value,
                     $this->minute,
                     $this->second,
                     $this->micro
@@ -486,7 +518,7 @@ class SiDateTime extends DateTime
             case 'minute':
                 $this->setTime(
                     $this->hour,
-                    $value,
+                    (int)$value,
                     $this->second,
                     $this->micro
                 );
@@ -495,7 +527,7 @@ class SiDateTime extends DateTime
                 $this->setTime(
                     $this->hour,
                     $this->minute,
-                    $value,
+                    (int)$value,
                     $this->micro
                 );
                 break;
@@ -504,14 +536,14 @@ class SiDateTime extends DateTime
                     $this->hour,
                     $this->minute,
                     $this->second,
-                    $value
+                    (int)$value
                 );
                 break;
             case 'timestamp':
-                $this->setTimestamp($value);
+                $this->setTimestamp((int)$value);
                 break;
             case 'timezone':
-                $this->setTimezone($value);
+                $this->setTimezone(new DateTimeZone($value));
                 break;
             default:
                 echo 'Error!!! Hint' . PHP_EOL;
@@ -533,7 +565,7 @@ class SiDateTime extends DateTime
                     'quarter',
                     'timezone',
                 ];
-                foreach ($setting as $k => $v) {
+                foreach ($setting as $v) {
                     echo $v . PHP_EOL;
                 }
                 break;
@@ -553,11 +585,11 @@ class SiDateTime extends DateTime
             'dayOfWeek' => $this->format('w'),
             'dayOfWeekIso' => $this->format('N'),
             'dayOfYear' => $this->format('z'),
-            'weekNumberInMonth' => $this->format('z'),
+            'weekNumberInMonth' => $this->format('W'),
             'daysInMonth' => $this->format('t'),
             'timestamp' => $this->getTimestamp(),
             'quarter' => ceil($this->format('m') / 3),
-            'timezone' => $this->getTimezone(),
+            'timezone' => $this->getTimezone()->getName(),
             'age' => $this->age(),
         ];
 
